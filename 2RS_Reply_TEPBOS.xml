@@ -1,5 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-16"?>
-<Fare_MasterPricerTravelBoardSearchReply xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<Fare_MasterPricerTravelBoardSearchReply>
   <replyStatus xmlns="http://xml.amadeus.com/FMPTBR_13_1_1A">
     <status>
       <advisoryTypeInfo>FQX</advisoryTypeInfo>
