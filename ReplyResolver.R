@@ -59,6 +59,7 @@ colnames(RCpart4)<-c("RCitem","FlightComb","VCarrier","TotalFare")
 #
 #RS1 flight proposal
 #
+
 RS1FP<-xmlApply(getNodeSet(query1,
                            "//Fare_MasterPricerTravelBoardSearchReply/
                            flightIndex[requestedSegmentRef=1]/
@@ -67,6 +68,22 @@ RS1FP<-xmlApply(getNodeSet(query1,
 RS1FP<-data.frame(matrix(unlist(RS1FP),ncol=3,byrow=TRUE))
 colnames(RS1FP)<-c("FP1_item","FP1_EFT","FP1_MCX")
 RS1FP$FP1_item<-paste("S",RS1FP$FP1_item,sep = "")
+
+FP1_ITR2<-data.frame()
+FP1_ITR3<-data.frame()
+
+for(i in 1:length(RS1FP$FP1_item)){
+  
+  path<-paste("//Fare_MasterPricerTravelBoardSearchReply/flightIndex[requestedSegmentRef=1]/groupOfFlights[",i,"]/flightDetails/flightInformation/location/locationId",sep="")
+  
+  FP1_ITR<-xmlApply(getNodeSet(query1,path = path),xmlValue,recursive=TRUE)
+  FP1_ITR2<-data.frame(matrix(toString(unlist(FP1_ITR)),ncol = 1))  
+  FP1_ITR3<-rbind(FP1_ITR2,FP1_ITR3)
+  
+}
+
+RS1FP<-cbind(RS1FP,FP1_ITR3)
+colnames(RS1FP)<-c("FP1_item","FP1_EFT","FP1_MCX","FP1_ITR")
 
 #
 #RS2 flight proposal
@@ -81,6 +98,22 @@ RS2FP<-data.frame(matrix(unlist(RS2FP),ncol=3,byrow=TRUE))
 colnames(RS2FP)<-c("FP2_item","FP2_EFT","FP2_MCX")
 RS2FP$FP2_item<-paste("S",RS2FP$FP2_item,sep = "")
 
+FP2_ITR2<-data.frame()
+FP2_ITR3<-data.frame()
+
+for(i in 1:length(RS2FP$FP2_item)){
+  
+  path<-paste("//Fare_MasterPricerTravelBoardSearchReply/flightIndex[requestedSegmentRef=2]/groupOfFlights[",i,"]/flightDetails/flightInformation/location/locationId",sep="")
+  
+  FP2_ITR<-xmlApply(getNodeSet(query1,path = path),xmlValue,recursive=TRUE)
+  FP2_ITR2<-data.frame(matrix(toString(unlist(FP2_ITR)),ncol = 1))  
+  FP2_ITR3<-rbind(FP2_ITR2,FP2_ITR3)
+  
+}
+
+RS2FP<-cbind(RS2FP,FP2_ITR3)
+colnames(RS2FP)<-c("FP2_item","FP2_EFT","FP2_MCX","FP2_ITR")
+
 #
 #RS1+RS2 flight proposal
 #
@@ -92,7 +125,7 @@ colnames(FPcomb)<-c("FP1_item","FP2_item","CombCode")
 
 FPcomb<-merge(FPcomb,RS2FP,by="FP2_item")
 FPcomb<-merge(FPcomb,RS1FP,by="FP1_item")
-FPcomb<-FPcomb[,c("FP1_item","FP2_item","CombCode","FP1_EFT","FP1_MCX","FP2_EFT","FP2_MCX")]
+FPcomb<-FPcomb[,c("FP1_item","FP2_item","CombCode","FP1_EFT","FP1_MCX","FP2_EFT","FP2_MCX","FP1_ITR","FP2_ITR")]
 
 #
 #Expand FPs in one RC into up to 250 RC*FP table
@@ -103,7 +136,6 @@ RC_expand<-str_split_fixed(RCpart4$FlightComb,", ",n=length(unique(FP_key)))
 RC_expand<-melt(cbind(RC_expand,RCpart4),id=c("RCitem","FlightComb","VCarrier","TotalFare"))
 RC_expand<-subset(RC_expand,value!="")
 RC_expand[,"CombCode"]<-RC_expand$value
-#############
 
 RC_expand_all<-merge(RC_expand,FPcomb,by="CombCode",all=FALSE)
 
