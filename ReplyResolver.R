@@ -1,7 +1,8 @@
 library(XML)
 library(reshape)
+library(stringr)
 
-##########################################Notice!##########################################
+##########################################Notice!###########################################
 #Before run the script, has to turn
 #<Fare_MasterPricerTravelBoardSearchReply xmlns="http://xml.amadeus.com/FMPTBR_14_3_1A">
 #into
@@ -71,6 +72,10 @@ RS1FP$FP1_item<-paste("S",RS1FP$FP1_item,sep = "")
 
 FP1_ITR2<-data.frame()
 FP1_ITR3<-data.frame()
+FP1_MC2<-data.frame()
+FP1_MC3<-data.frame()
+FP1_OC2<-data.frame()
+FP1_OC3<-data.frame()
 
 for(i in 1:length(RS1FP$FP1_item)){
   
@@ -80,10 +85,20 @@ for(i in 1:length(RS1FP$FP1_item)){
   FP1_ITR2<-data.frame(matrix(toString(unlist(FP1_ITR)),ncol = 1))  
   FP1_ITR3<-rbind(FP1_ITR2,FP1_ITR3)
   
+  path_2<-paste("//Fare_MasterPricerTravelBoardSearchReply/flightIndex[requestedSegmentRef=1]/groupOfFlights[",i,"]/flightDetails/flightInformation/companyId/marketingCarrier",sep="")
+  FP1_MC<-xmlApply(getNodeSet(query1,path = path_2),xmlValue,recursive=TRUE)
+  FP1_MC2<-data.frame(matrix(toString(unlist(FP1_MC)),ncol = 1))
+  FP1_MC3<-rbind(FP1_MC2,FP1_MC3)
+  
+  path_3<-paste("//Fare_MasterPricerTravelBoardSearchReply/flightIndex[requestedSegmentRef=1]/groupOfFlights[",i,"]/flightDetails/flightInformation/companyId/operatingCarrier",sep="")
+  FP1_OC<-xmlApply(getNodeSet(query1,path = path_3),xmlValue,recursive=TRUE)
+  FP1_OC2<-data.frame(matrix(toString(unlist(FP1_OC)),ncol = 1))
+  FP1_OC3<-rbind(FP1_OC2,FP1_OC3)
+  
 }
 
-RS1FP<-cbind(RS1FP,FP1_ITR3)
-colnames(RS1FP)<-c("FP1_item","FP1_EFT","FP1_MCX","FP1_ITR")
+RS1FP<-cbind(RS1FP,FP1_ITR3,FP1_MC3,FP1_OC3)
+colnames(RS1FP)<-c("FP1_item","FP1_EFT","FP1_MCX","FP1_ITR","FP1_MC","FP1_OC")
 
 #
 #RS2 flight proposal
@@ -100,6 +115,10 @@ RS2FP$FP2_item<-paste("S",RS2FP$FP2_item,sep = "")
 
 FP2_ITR2<-data.frame()
 FP2_ITR3<-data.frame()
+FP2_MC2<-data.frame()
+FP2_MC3<-data.frame()
+FP2_OC2<-data.frame()
+FP2_OC3<-data.frame()
 
 for(i in 1:length(RS2FP$FP2_item)){
   
@@ -109,10 +128,20 @@ for(i in 1:length(RS2FP$FP2_item)){
   FP2_ITR2<-data.frame(matrix(toString(unlist(FP2_ITR)),ncol = 1))  
   FP2_ITR3<-rbind(FP2_ITR2,FP2_ITR3)
   
+  path_2<-paste("//Fare_MasterPricerTravelBoardSearchReply/flightIndex[requestedSegmentRef=2]/groupOfFlights[",i,"]/flightDetails/flightInformation/companyId/marketingCarrier",sep="")
+  FP2_MC<-xmlApply(getNodeSet(query1,path = path_2),xmlValue,recursive=TRUE)
+  FP2_MC2<-data.frame(matrix(toString(unlist(FP2_MC)),ncol = 1))
+  FP2_MC3<-rbind(FP2_MC2,FP2_MC3)
+  
+  path_3<-paste("//Fare_MasterPricerTravelBoardSearchReply/flightIndex[requestedSegmentRef=2]/groupOfFlights[",i,"]/flightDetails/flightInformation/companyId/operatingCarrier",sep="")
+  FP2_OC<-xmlApply(getNodeSet(query1,path = path_3),xmlValue,recursive=TRUE)
+  FP2_OC2<-data.frame(matrix(toString(unlist(FP2_OC)),ncol = 1))
+  FP2_OC3<-rbind(FP2_OC2,FP2_OC3)
+  
 }
 
-RS2FP<-cbind(RS2FP,FP2_ITR3)
-colnames(RS2FP)<-c("FP2_item","FP2_EFT","FP2_MCX","FP2_ITR")
+RS2FP<-cbind(RS2FP,FP2_ITR3,FP2_MC3,FP2_OC3)
+colnames(RS2FP)<-c("FP2_item","FP2_EFT","FP2_MCX","FP2_ITR","FP2_MC","FP2_OC")
 
 #
 #RS1+RS2 flight proposal
@@ -123,9 +152,13 @@ FPcomb<-expand.grid(RS1FP$FP1_item,RS2FP$FP2_item)
 FPcomb[,"CombCode"]<-data.frame(paste(FPcomb$Var1,FPcomb$Var2,sep=""))
 colnames(FPcomb)<-c("FP1_item","FP2_item","CombCode")
 
-FPcomb<-merge(FPcomb,RS2FP,by="FP2_item")
 FPcomb<-merge(FPcomb,RS1FP,by="FP1_item")
-FPcomb<-FPcomb[,c("FP1_item","FP2_item","CombCode","FP1_EFT","FP1_MCX","FP2_EFT","FP2_MCX","FP1_ITR","FP2_ITR")]
+FPcomb<-merge(FPcomb,RS2FP,by="FP2_item")
+
+#
+#Skip the below naming line as col names are all defined already
+#FPcomb<-FPcomb[,c("FP1_item","FP2_item","CombCode","FP1_EFT","FP1_MCX","FP2_EFT","FP2_MCX","FP1_ITR","FP2_ITR")]
+#
 
 #
 #Expand FPs in one RC into up to 250 RC*FP table
@@ -138,6 +171,7 @@ RC_expand<-subset(RC_expand,value!="")
 RC_expand[,"CombCode"]<-RC_expand$value
 
 RC_expand_all<-merge(RC_expand,FPcomb,by="CombCode",all=FALSE)
+
 
 #####################################endnote of the code##################################
 #
