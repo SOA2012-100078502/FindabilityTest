@@ -2,7 +2,7 @@ library(XML)
 library(reshape)
 library(stringr)
 
-##########################################Notice!##########################################
+##########################################Notice!###########################################
 #Before run the script, has to turn
 #<Fare_MasterPricerTravelBoardSearchReply xmlns="http://xml.amadeus.com/FMPTBR_14_3_1A">
 #into
