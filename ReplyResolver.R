@@ -12,7 +12,7 @@ library(stringr)
 
 #
 #read data into XML document
-query1<-xmlTreeParse(file="2RS_Reply_TPEDUS.xml", encoding="UTF-8", useInternalNodes = TRUE)
+query1<-xmlTreeParse(file="TPE-HKG_sMC_Reply.xml", encoding="UTF-8", useInternalNodes = TRUE)
 # or use
 #xmlParse(file="", encoding="UTF-8")
 #
@@ -172,6 +172,7 @@ RC_expand[,"CombCode"]<-RC_expand$value
 
 RC_expand_all<-merge(RC_expand,FPcomb,by="CombCode",all=FALSE)
 
+write.csv(RC_expand_all,file="D:/Userfiles/wendell.huang/Desktop/Query_test/MP.csv")
 
 #####################################endnote of the code##################################
 #
